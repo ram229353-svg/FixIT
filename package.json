@@ -1,0 +1,17 @@
+{
+  "name": "fixit-project",
+  "version": "1.0.0",
+  "description": "FixIT - Household Service Booking Platform",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -s .",
+    "dev": "npx serve -s .",
+    "build": "echo 'No build required for static site'"
+  },
+  "keywords": ["fixit", "household-services", "booking", "maintenance"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}

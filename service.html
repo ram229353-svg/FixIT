@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Details - FixIT</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<script>
+  if (!sessionStorage.getItem("isLoggedIn")) {
+    window.location.href = "login.html";
+  }
+</script>
+
+<header class="navbar">
+  <h1 class="logo">FixIT</h1>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="index.html#services">Services</a>
+    <a href="#" class="center-nav">Book Trusted Household Service</a>
+    <a href="index.html#book">Book</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </nav>
+</header>
+
+<section class="detail-page">
+  <a class="back-link" href="index.html">← Back to Services</a>
+  <h2 id="service-title">Service Provider Details</h2>
+  <h3 id="service-description">Select a service on the previous page to see the provider's contact details and availability.</h3>
+  <ul class="contact-list" id="contact-list"></ul>
+  
+  <div class="booking-section">
+    <button class="book-btn" onclick="openBookingForm()">📅 Book Now</button>
+  </div>
+
+  <!-- Booking Modal -->
+  <div id="bookingModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close" onclick="closeBookingForm()">&times;</span>
+      <h2>Book Service</h2>
+      <form id="bookingForm">
+        <input type="hidden" id="serviceType">
+        <input type="text" id="customerName" placeholder="Your Name" required>
+        <input type="tel" id="customerPhone" placeholder="Phone Number" required>
+        <input type="text" id="customerLocation" placeholder="Location" required>
+        <select id="bookingTime" required>
+          <option value="">Select Time</option>
+          <option value="9 AM - 12 PM">9 AM - 12 PM</option>
+          <option value="12 PM - 3 PM">12 PM - 3 PM</option>
+          <option value="3 PM - 6 PM">3 PM - 6 PM</option>
+        </select>
+        <textarea id="bookingNotes" placeholder="Type your problem"></textarea>
+        <button type="submit">Submit Booking</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+  function logout() {
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+  }
+
+  function getQueryParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+  }
+
+  function renderServiceDetails(serviceKey) {
+    const services = {
+      plumber: {
+        title: "Plumber Service",
+        description: "*Trusted local plumbers for leaks, pipe repairs, and installation.",
+        contact: [
+          "Provider: Rahul Sharma",
+          "Phone: +91 98765 43210",
+          "Email: rahul.plumber@fixit.com",
+          "Location: Santoshi Nagar Road, Raipur",
+          "Availability: Mon - Sat, 9 AM - 6 PM"
+        ]
+      },
+      electrician: {
+        title: "Electrician Service",
+        description: "*Certified electricians for wiring, lighting, appliance repair and more.",
+        contact:[
+          "Provider: Anjali Verma",
+          "Phone: +91 91234 56789",
+          "Email: anjali.electric@fixit.com",
+          "Location: Sejbahar Old Dhamtari road,Raipur",
+          "Availability: Mon - Sat, 10 AM - 7 PM"
+        ]
+      },
+      cleaning: {
+        title: "Cleaning Service",
+        description: "*Professional home cleaning with sanitization and deep-clean options.",
+        contact: [
+          "Provider: Neha Singh",
+          "Phone: +91 99876 54321",
+          "Email: neha.clean@fixit.com",
+          "Location: LIG housing board Sejbahar, Raipur",
+          "Availability: Tue - Sun, 8 AM - 5 PM"
+        ]
+      },
+      carpenter: {
+        title: "Carpenter Service",
+        description: "*Experienced carpenters for furniture repair, assembly, and custom work.",
+        contact: [
+          "Provider: Amit Patel",
+          "Phone: +91 90123 45678",
+          "Email: amit.carpenter@fixit.com",
+          "Location: Dunda housing colony, Raipur",
+          "Availability: Mon - Fri, 9 AM - 6 PM"
+        ]
+      }
+    };
+
+    const service = services[serviceKey];
+    const titleEl = document.getElementById("service-title");
+    const descEl = document.getElementById("service-description");
+    const contactList = document.getElementById("contact-list");
+
+    if (service) {
+      titleEl.textContent = service.title;
+      descEl.textContent = service.description;
+      contactList.innerHTML = service.contact.map(item => `<li>${item}</li>`).join("");
+    } else {
+      titleEl.textContent = "Service Not Found";
+      descEl.textContent = "The requested service is unavailable. Please go back and choose a valid service.";
+      contactList.innerHTML = "";
+    }
+  }
+
+  const serviceKey = getQueryParam("service");
+  renderServiceDetails(serviceKey);
+</script>
+
+<script>
+  // Booking functions
+  function openBookingForm() {
+    document.getElementById("bookingModal").style.display = "block";
+    document.getElementById("serviceType").value = getQueryParam("service");
+  }
+
+  function closeBookingForm() {
+    document.getElementById("bookingModal").style.display = "none";
+  }
+
+  // Close modal when clicking outside
+  window.onclick = function(event) {
+    const modal = document.getElementById("bookingModal");
+    if (event.target == modal) {
+      closeBookingForm();
+    }
+  }
+
+  // Handle form submission
+  document.getElementById("bookingForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    
+    const booking = {
+      id: Date.now(),
+      serviceType: document.getElementById("serviceType").value,
+      customerName: document.getElementById("customerName").value,
+      customerPhone: document.getElementById("customerPhone").value,
+      bookingTime: document.getElementById("bookingTime").value,
+      notes: document.getElementById("bookingNotes").value,
+      user: sessionStorage.getItem("currentUser") || localStorage.getItem("user"),
+      status: "pending",
+      createdAt: new Date().toISOString()
+    };
+
+    // Get existing bookings
+    let bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    bookings.push(booking);
+    localStorage.setItem("bookings", JSON.stringify(bookings));
+
+    alert("Booking submitted! Status: Pending Approval");
+    closeBookingForm();
+    document.getElementById("bookingForm").reset();
+  });
+</script>
+</body>
+</html>

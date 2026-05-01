@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FixIT</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<script>
+// simple auth check
+if(!sessionStorage.getItem("isLoggedIn")) {
+  window.location.href = "login.html";
+}
+</script>
+
+<header class="navbar">
+  <h1 class="logo">FixIT</h1>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#services">Services</a>
+    <a href="#" class="center-nav">Book Trusted Household Services</a>
+    <a href="#" onclick="showMyBookings()">Book</a>
+    <a href="admin.html" class="admin-link">Admin</a>
+    <div class="user-menu">
+      <button class="user-icon-btn" onclick="toggleUserMenu()">👤 <span id="navUserName">User</span></button>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <span id="dropdownUserName">User</span>
+          <small id="dropdownUserEmail">user@email.com</small>
+        </div>
+        <a href="#" onclick="showProfileModal()">👤 My Profile</a>
+        <a href="#" onclick="showMyBookings()">📋 My Bookings</a>
+        <a href="#" onclick="logout()">🚪 Logout</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- Profile Modal -->
+<div id="profileModal" class="modal">
+  <div class="modal-content profile-modal-content">
+    <span class="close" onclick="closeProfileModal()">&times;</span>
+    <div class="profile-modal-header">
+      <div class="profile-modal-avatar">👤</div>
+      <h2>My Profile</h2>
+    </div>
+    <div class="profile-modal-body">
+      <div class="profile-field">
+        <label>Name</label>
+        <input type="text" id="profileNameInput" placeholder="Your Name">
+      </div>
+      <div class="profile-field">
+        <label>Email</label>
+        <input type="email" id="profileEmailInput" placeholder="Your Email">
+      </div>
+      <div class="profile-field">
+        <label>Phone</label>
+        <input type="tel" id="profilePhoneInput" placeholder="Your Phone">
+      </div>
+      <button class="profile-save-btn" onclick="saveUserProfile()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- My Bookings Modal -->
+<div id="bookingsModal" class="modal">
+  <div class="modal-content bookings-modal-content">
+    <span class="close" onclick="closeBookingsModal()">&times;</span>
+    <h2>📋 My Bookings</h2>
+    <div id="bookingsList"></div>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="overlay">
+    <h2></h2>
+  </div>
+</section>
+
+<section id="services" class="services">
+  <div class="card" data-name="plumber" onclick="openService('plumber')">
+    <img src="https://img.icons8.com/fluency/96/plumbing.png">
+    <h3>Plumber</h3>
+  </div>
+  <div class="card" data-name="electrician" onclick="openService('electrician')">
+    <img src="https://img.icons8.com/fluency/96/electrical.png">
+    <h3>Electrician</h3>
+  </div>
+  <div class="card" data-name="cleaning" onclick="openService('cleaning')">
+    <img src="https://img.icons8.com/fluency/96/clean.png">
+    <h3>Cleaning</h3>
+  </div>
+  <div class="card" data-name="carpenter" onclick="openService('carpenter')">
+    <img src="https://img.icons8.com/fluency/96/hammer.png">
+    <h3>Carpenter</h3>
+  </div>
+</section>
+  <footer>
+    <div>
+    <a href="#">FAQ</a>
+    <a href="#">Contact Us</a>
+    <a href="#">Terms of use</a>
+    <a href="#">Privacy Policy</a>
+    <a href="#">Refund Policy</a>
+    <a class="copyright" href="#">&copy; 2026 | FixIT </a>
+    </div>
+  </footer>
+
+
+<script src="script.js"></script>
+<script>
+  // Load user profile on page load
+  document.addEventListener("DOMContentLoaded", function() {
+    loadUserProfile();
+  });
+
+  function loadUserProfile() {
+    const user = localStorage.getItem("user") || sessionStorage.getItem("currentUser");
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    const name = userData.name || user || "User";
+    const email = userData.email || "user@email.com";
+    
+    // Update navbar user name
+    document.getElementById("navUserName").textContent = name;
+    document.getElementById("dropdownUserName").textContent = name;
+    document.getElementById("dropdownUserEmail").textContent = email;
+    
+    // Update profile section if exists
+    const profileName = document.getElementById("profileName");
+    const profileEmail = document.getElementById("profileEmail");
+    if (profileName) profileName.textContent = name;
+    if (profileEmail) profileEmail.textContent = email;
+  }
+
+  // User dropdown menu functions
+  function toggleUserMenu() {
+    const dropdown = document.getElementById("userDropdown");
+    dropdown.classList.toggle("show");
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener("click", function(event) {
+    if (!event.target.closest(".user-menu")) {
+      const dropdown = document.getElementById("userDropdown");
+      if (dropdown) dropdown.classList.remove("show");
+    }
+  });
+
+  // Profile modal functions
+  function showProfileModal() {
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    document.getElementById("profileNameInput").value = userData.name || localStorage.getItem("user") || "";
+    document.getElementById("profileEmailInput").value = userData.email || "";
+    document.getElementById("profilePhoneInput").value = userData.phone || "";
+    document.getElementById("profileModal").style.display = "block";
+    document.getElementById("userDropdown").classList.remove("show");
+  }
+
+  function closeProfileModal() {
+    document.getElementById("profileModal").style.display = "none";
+  }
+
+  function saveUserProfile() {
+    const name = document.getElementById("profileNameInput").value.trim();
+    const email = document.getElementById("profileEmailInput").value.trim();
+    const phone = document.getElementById("profilePhoneInput").value.trim();
+    
+    if (name) {
+      const userData = {
+        name: name,
+        email: email,
+        phone: phone
+      };
+      localStorage.setItem("userData", JSON.stringify(userData));
+      
+      loadUserProfile();
+      closeProfileModal();
+      alert("Profile updated!");
+    } else {
+      alert("Please enter your name");
+    }
+  }
+
+  // Bookings modal functions
+  function showMyBookings() {
+    const user = localStorage.getItem("user") || sessionStorage.getItem("currentUser");
+    const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    const userBookings = bookings.filter(b => b.user === user);
+    
+    const container = document.getElementById("bookingsList");
+    
+    if (userBookings.length === 0) {
+      container.innerHTML = "<p class='no-bookings'>No bookings yet. Book a service to get started!</p>";
+    } else {
+      container.innerHTML = userBookings.map(booking => `
+        <div class="booking-item">
+          <div class="booking-info">
+            <div class="booking-service">${capitalizeFirst(booking.serviceType)}</div>
+            <div class="booking-date">⏰ ${booking.bookingTime || "N/A"}</div>
+            <div class="booking-notes">${booking.notes || "No problem described"}</div>
+          </div>
+          <div class="booking-status status-${booking.status}">${capitalizeFirst(booking.status)}</div>
+        </div>
+      `).join("");
+    }
+    
+    document.getElementById("bookingsModal").style.display = "block";
+    document.getElementById("userDropdown").classList.remove("show");
+  }
+
+  function closeBookingsModal() {
+    document.getElementById("bookingsModal").style.display = "none";
+  }
+
+  // Close modals when clicking outside
+  window.onclick = function(event) {
+    if (event.target.classList.contains("modal")) {
+      event.target.style.display = "none";
+    }
+  }
+
+  function capitalizeFirst(str) {
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+  }
+</script>
+</body>
+</html>
